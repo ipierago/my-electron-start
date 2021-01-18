@@ -1,10 +1,16 @@
 // Modules to control application life and create native browser window
 const {app, ipcMain, BrowserWindow} = require('electron')
 const path = require('path')
+const { takeHeapSnapshot } = require('process')
+const packageJSON = require('./package.json')
+
+// Keep a global reference of the window object, if you don't, the window will
+// be closed automatically when the JavaScript object is garbage collected.
+let mainWindow;
 
 function createWindow () {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -47,11 +53,28 @@ app.on('window-all-closed', function () {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 
+ipcMain.on("toMain", (event, args) => {
+  setTimeout(function() {
+    // Send result back to renderer process
+    mainWindow.webContents.send("fromMain", "data from main")
+  }, 1000)
+});
 
+ipcMain.handle('get-version', (event) => {
+  return packageJSON.version
+})
+
+ipcMain.handle('set-fullscreen', (event, arg) => {
+
+})
+
+async function awaitableProcess() {
+  await new Promise(r => setTimeout(r, 1000));
+}
 
 ipcMain.handle('an-action', async (event, arg) => {
     // do stuff
-    //await awaitableProcess();
+    await awaitableProcess();
     return "foo";
 })
 

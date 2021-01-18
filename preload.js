@@ -1,5 +1,3 @@
-// All of the Node.js APIs are available in the preload process.
-// It has the same sandbox as a Chrome extension.
 window.addEventListener('DOMContentLoaded', () => {
   const replaceText = (selector, text) => {
     const element = document.getElementById(selector)
@@ -11,22 +9,34 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 })
 
-//import {ipcRenderer, contextBridge} from "electron"
 const {ipcRenderer, contextBridge} = require('electron')
 
-contextBridge.exposeInMainWorld("app", {
-  setFullscreen: (flag) => ipcRenderer.invoke("setFullscreen", flag),
-
-  anAction: (async () => {
-    const result = await ipcRenderer.invoke('an-action', [1, 2, 3]);
-    return result;
-  }),
-
-})
-
-// Adds an object 'api' to the global window object:
 contextBridge.exposeInMainWorld('api', {
-    doAction: async (arg) => {
-        return await ipcRenderer.invoke('an-action', arg);
+    setFullscreen: (flag) => ipcRenderer.invoke("setFullscreen", flag),
+    anAction: async (arg) => {
+        return await ipcRenderer.invoke('anAction', arg);
+    },
+    getVersion: async () => {
+      return await ipcRenderer.invoke('getVersion')
     }
 })
+
+// Expose protected methods that allow the renderer process to use
+// the ipcRenderer without exposing the entire object
+contextBridge.exposeInMainWorld('api2', {
+      send: (channel, data) => {
+          // whitelist channels
+          let validChannels = ["toMain"];
+          if (validChannels.includes(channel)) {
+              ipcRenderer.send(channel, data);
+          }
+      },
+      receive: (channel, func) => {
+          let validChannels = ["fromMain"];
+          if (validChannels.includes(channel)) {
+              // Deliberately strip event as it includes `sender` 
+              ipcRenderer.on(channel, (event, ...args) => func(...args));
+          }
+      }
+  }
+);
