@@ -6,7 +6,7 @@
 // process.
 (async () => {
     const response = await window.api.anAction([1,2,3]);
-    console.log("Result of an-action is " + response); // we now have the response from the main thread without exposing
+    console.log("Result of anAction is " + response); // we now have the response from the main thread without exposing
                            // ipcRenderer, leaving the app less vulnerable to attack    
 })();
 

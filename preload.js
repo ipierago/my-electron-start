@@ -14,10 +14,10 @@ const {ipcRenderer, contextBridge} = require('electron')
 contextBridge.exposeInMainWorld('api', {
     setFullscreen: (flag) => ipcRenderer.invoke("setFullscreen", flag),
     anAction: async (arg) => {
-        return await ipcRenderer.invoke('anAction', arg);
+        return await ipcRenderer.invoke('an-action', arg);
     },
     getVersion: async () => {
-      return await ipcRenderer.invoke('getVersion')
+      return await ipcRenderer.invoke('get-version')
     }
 })
 
